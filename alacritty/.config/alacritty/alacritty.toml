@@ -1,0 +1,8 @@
+[terminal]
+#shell = {program = "/bin/zsh", args = ["-l", "-c", "/opt/homebrew/bin/zellij"]}
+shell = {program = "/opt/homebrew/bin/zellij"}
+[font]
+normal = {family = "DepartureMono Nerd Font"}
+#size = 20.0
+[window]
+option_as_alt = "Both"

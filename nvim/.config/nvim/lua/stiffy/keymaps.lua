@@ -1,0 +1,14 @@
+--Hardmode
+-- vim.keymap.set("n", "<Left>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<Right>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<Up>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<Down>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<BS>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<Del>", "<Nop>", { noremap = true, silent = true })
+--
+--
+--
+-- vim.keymap.set("i", "<Left>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("i", "<Right>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("i", "<Up>", "<Nop>", { noremap = true, silent = true })
+-- vim.keymap.set("i", "<Down>", "<Nop>", { noremap = true, silent = true })
