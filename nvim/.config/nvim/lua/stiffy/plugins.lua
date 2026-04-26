@@ -234,7 +234,14 @@ local M = {
     {
         "williamboman/mason-lspconfig.nvim",
         dependencies = {
+            "williamboman/mason.nvim",
             "neovim/nvim-lspconfig",
+        },
+    },
+    {
+        "neovim/nvim-lspconfig",
+        dependencies = {
+            "hrsh7th/cmp-nvim-lsp"
         },
         config = function()
             local function custom_on_attach()
@@ -272,28 +279,25 @@ local M = {
                 })
             end
 
-            local m_lspconfig = require("mason-lspconfig")
+            local capabilities = require("cmp_nvim_lsp").default_capabilities()
+            local lspconfig = require("lspconfig")
+            vim.lsp.config("*", {
+                on_attach = custom_on_attach,
+                capabilities = capabilities,
+                root_dir = function(bufnr, cb)
+                    local cwd = vim.fn.getcwd()
+                    cb(
+                        lspconfig.util.root_pattern(".git")(cwd) or
+                        lspconfig.util.root_pattern("package.json")(cwd) or
+                        lspconfig.util.root_pattern("pyright.json")(cwd) or
+                        lspconfig.util.root_pattern("Cargo.toml")(cwd) or
+                        lspconfig.util.root_pattern("go.mod")(cwd) or
+                        cwd
+                    )
+                end
+            })
 
-            m_lspconfig.setup()
-            m_lspconfig.setup_handlers {
-                function(server_name)
-                    local capabilities = require("cmp_nvim_lsp").default_capabilities()
-                    require("lspconfig")[server_name].setup {
-                        on_attach = custom_on_attach,
-                        capabilities = capabilities,
-                        root_dir = function()
-                            local lspconfig = require("lspconfig")
-                            return lspconfig.util.root_pattern(".git")(vim.fn.getcwd()) or
-                                lspconfig.util.root_pattern("package.json")(vim.fn.getcwd()) or
-                                lspconfig.util.root_pattern("pyright.json")(vim.fn.getcwd()) or
-                                lspconfig.util.root_pattern("Cargo.toml")(vim.fn.getcwd()) or
-                                lspconfig.util.root_pattern("go.mod")(vim.fn.getcwd()) or
-                                vim.fn.getcwd()
-                        end
-                    }
-                end,
-                ["lua_ls"] = function()
-                    require("lspconfig")["lua_ls"].setup {
+            vim.lsp.config("lua_ls", {
                         on_attach = custom_on_attach,
                         settings = {
                             Lua = {
@@ -314,11 +318,8 @@ local M = {
                                 },
                             },
                         },
-                    }
-                end,
-                ["gopls"] = function()
-                    local lspconfig = require("lspconfig")
-                    require("lspconfig")["gopls"].setup {
+                    })
+                vim.lsp.config("gopls", {
                         on_attach = custom_on_attach,
                         cmd = { "gopls" },
                         filetypes = { "go", "gomod" },
@@ -331,9 +332,7 @@ local M = {
                                 staticcheck = true,
                             },
                         },
-                    }
-                end,
-            }
+                    })
         end,
     },
     {
@@ -341,9 +340,8 @@ local M = {
         event = "BufReadPost",
         build = ":TSUpdate",
         config = function()
-            local configs = require("nvim-treesitter.configs")
-            configs.setup({
-                ensure_installed = {
+            local ts = require("nvim-treesitter")
+            local parsers = {
                     "lua",
                     "python",
                     "rust",
@@ -367,26 +365,37 @@ local M = {
                     "regex",
                     "kotlin",
                     "just",
-                },
-                sync_install = false,
-                highlight = { enable = true },
-                indent = { enable = true }
-            })
+                }
+            for _, parser in ipairs(parsers) do
+                pcall(ts.install, parser)
+            end
 
-            vim.api.nvim_create_autocmd("LspAttach", {
-                callback = function(args)
-                    local client = vim.lsp.get_client_by_id(args.data.client_id)
-                    if client and client.server_capabilities.selectionRangeProvider then
-                        vim.cmd("TSBufDisable highlight")
-                    end
+            -- OLD CONFIG
+            --sync_install = false,
+            --highlight = { enable = true },
+            --indent = { enable = true }
+
+            vim.api.nvim_create_autocmd("FileType", {
+                callback = function ()
+                   pcall(vim.treesitter.start)
                 end
             })
 
-            vim.api.nvim_create_autocmd("LspDetach", {
-                callback = function()
-                    vim.cmd("TSBufEnable highlight")
-                end
-            })
+            -- OLD CONFIG
+--            vim.api.nvim_create_autocmd("LspAttach", {
+--                callback = function(args)
+--                    local client = vim.lsp.get_client_by_id(args.data.client_id)
+--                    if client and client.server_capabilities.selectionRangeProvider then
+--                        vim.cmd("TSBufDisable highlight")
+--                    end
+--                end
+--            })
+--
+--            vim.api.nvim_create_autocmd("LspDetach", {
+--                callback = function()
+--                    vim.cmd("TSBufEnable highlight")
+--                end
+--            })
         end
     },
     {
@@ -422,7 +431,7 @@ local M = {
     },
     {
         "nvim-telescope/telescope.nvim",
-        branch = "0.1.x",
+        version = "*",
         event = "VeryLazy",
         dependencies = {
             "nvim-lua/plenary.nvim",
