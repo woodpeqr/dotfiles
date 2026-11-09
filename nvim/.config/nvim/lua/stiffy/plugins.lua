@@ -1,9 +1,6 @@
 local M = {
     -- Can freely add/remove
     {
-        "github/copilot.vim",
-    },
-    {
         "Shatur/neovim-ayu",
     },
     {
